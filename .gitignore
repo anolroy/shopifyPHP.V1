@@ -1,0 +1,10 @@
+/vendor
+/archive
+/.vscode
+*.zip
+*.json
+credentials.php
+credentials1.php
+credentials2.php
+connection.php
+paymentSettings.php
