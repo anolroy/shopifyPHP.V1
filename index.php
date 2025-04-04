@@ -165,7 +165,7 @@ $jsonFiles = listJsonFiles($directory);
     <!-- Add the Product Update button -->
     <div style="position: absolute; top: 10px; left: 10px;">
         <form method="get" action="">
-            <button type="submit" name="action" value="product_update">Product Update1</button>
+            <button type="submit" name="action" value="product_update">Product Update2</button>
         </form>
     </div>
 
