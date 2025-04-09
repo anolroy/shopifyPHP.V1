@@ -116,44 +116,44 @@ if (isset($_GET['action'])) {
         
         $processedProductIDs = []; 
         $productData = [];
+        
         // First, get all existing variants from the database
         $existingVariants = [];
         $getExistingSQL = "SELECT variant_id, StockCode FROM stockrecords";
         $result = $conn->query($getExistingSQL);
         
-        while ($row = $result->fetch_assoc())
-        {
-            $existingVariants[$row['variant_id']] = $row['StockCode']; // Store current SKU for each variant
+        while ($row = $result->fetch_assoc()) {
+            $existingVariants[$row['variant_id']] = $row['StockCode'];
         }
+        
         // Collect all products with status 'DRAFT'
-        $draftProducts = [];
+        $draftProductIDs = [];
         foreach ($products as $productEdge) {
             $product = $productEdge['node'];
             if ($product['status'] === 'DRAFT') {
-                $draftProducts[] = $product;
+                $productID = str_replace('gid://shopify/Product/', '', $product['id']);
+                $draftProductIDs[] = $productID;
             }
         }
-
-        // Delete all variants of 'DRAFT' products from stockrecords table
-        if (!empty($draftProducts)) {
-            foreach ($draftProducts as $draftProduct) {
-            $productID = str_replace('gid://shopify/Product/', '', $draftProduct['id']);
-            
-            // $file = fopen('1error.txt', 'a') or die('Cannot open the file');
-            // fwrite($file, $draftProduct['id'] . PHP_EOL);
-            // fclose($file);
-            $sqlDelete = "DELETE FROM stockrecords WHERE ProductID = ?";
+        
+        // Delete all variants of 'DRAFT' products in one query
+        if (!empty($draftProductIDs)) {
+            // Create placeholders for the IN clause
+            $placeholders = implode(',', array_fill(0, count($draftProductIDs), '?'));
+            $sqlDelete = "DELETE FROM stockrecords WHERE ProductID IN ($placeholders)";
             $stmtDelete = $conn->prepare($sqlDelete);
-            $stmtDelete->bind_param("s", $productID);
-
+        
+            // Dynamically bind the parameters
+            $types = str_repeat('s', count($draftProductIDs));
+            $stmtDelete->bind_param($types, ...$draftProductIDs);
+        
             if ($stmtDelete->execute()) {
-                echo "Deleted product with ID: {$productID} (status: DRAFT)\n";
+                echo "Deleted " . $stmtDelete->affected_rows . " draft products from stockrecords.\n";
             } else {
-                echo "Error deleting product: " . $stmtDelete->error . "\n";
+                echo "Error deleting draft products: " . $stmtDelete->error . "\n";
             }
-
+        
             $stmtDelete->close();
-            }
         }
         
    
@@ -229,33 +229,70 @@ if (isset($_GET['action'])) {
         }
 
         // Insert only new products
-        if (!empty($productData)) 
-            
-        {
-            $sql = "INSERT INTO stockrecords (
-                    stockID, StockCode, ProductID, Description, taxable, SellPrice, 
-                    variant_id, CreationDateTime,status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-
+        if (!empty($productData)) {
+            // Step 1: Count ProductID occurrences
+            $productIDCounts = [];
             foreach ($productData as $data) {
-                $stmt->bind_param(
-                    'issssssss',
-                    $data['stockID'], $data['sku'], $data['productID'], $data['title'], 
-                    $data['taxable'], $data['price'], $data['variantID'], $data['creationDateTime'], $data['status']
-                );
-
-                if ($stmt->execute()) {
-                    echo "Inserted new: StockID {$data['stockID']} - {$data['title']}\n";
-                } else {
-                    echo "Error: " . $stmt->error . "\n";
-                }
+                $pid = $data['productID'];
+                $productIDCounts[$pid] = ($productIDCounts[$pid] ?? 0) + 1;
             }
-            // $file = fopen('1Error.txt', 'w') or die('Cannot open the file');
-            // fwrite($file, json_encode($productData, JSON_PRETTY_PRINT));
-            // fclose($file);
-            // $stmt->close();
+        
+            // Step 2: Prepare multi-row insert
+            $sql = "INSERT INTO stockrecords (
+                stockID, StockCode, ProductID, Description, taxable, SellPrice,
+                variant_id, CreationDateTime, status, hasVariant
+            ) VALUES ";
+        
+            $placeholders = [];
+            $types = '';
+            $values = [];
+        
+            foreach ($productData as $data) {
+                $hasVariant = ($productIDCounts[$data['productID']] > 1) ? 1 : 0;
+                $placeholders[] = "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+                // Append the correct types: i = int, s = string
+                $types .= 'issssssssi';
+        
+                $values[] = $data['stockID'];
+                $values[] = $data['sku'];
+                $values[] = $data['productID'];
+                $values[] = $data['title'];
+                $values[] = $data['taxable'];
+                $values[] = $data['price'];
+                $values[] = $data['variantID'];
+                $values[] = $data['creationDateTime'];
+                $values[] = $data['status'];
+                $values[] = $hasVariant;
+            }
+        
+            $sql .= implode(', ', $placeholders);
+        
+            // Step 3: Prepare and bind
+            $stmt = $conn->prepare($sql);
+            if ($stmt === false) {
+                die("Prepare failed: " . $conn->error);
+            }
+        
+            // mysqli bind_param requires references
+            $bindValues = [];
+            $bindValues[] = & $types;
+        
+            foreach ($values as $key => $val) {
+                $bindValues[] = & $values[$key];  // pass by reference
+            }
+        
+            call_user_func_array([$stmt, 'bind_param'], $bindValues);
+        
+            if ($stmt->execute()) {
+                echo "✅ Inserted " . $stmt->affected_rows . " rows successfully.\n";
+            } else {
+                echo "❌ Error inserting: " . $stmt->error . "\n";
+            }
+        
+            $stmt->close();
         }
+        
        
        
         $conn->commit(); 

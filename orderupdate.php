@@ -136,7 +136,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'orderupdate' )
                 if (isset($refund['refund_line_items']) && !empty($refund['refund_line_items'])) 
                 {
                     $hasRefundLineItems = true;
-                    $restock_type = $refund['restock'];// if this is false there is a return associated with refund . true means refund with line items only
+                    $restock_type = $refund['restock'];//  false means return associated with refund . true means refund with line items 
                     if ($restock_type == false) 
                     {
                         $TransactionType = 2;
@@ -170,7 +170,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'orderupdate' )
                 $SourcePHP = "orderupdate.php - " . $filename;
                 $SourceID = ""; //$order_data['payment_id'];
 
-
+//1.Scenario : transactions node can be empty and still there can be a return
+//i.e 'orderUpdate.php - Sales Return - /home/storage/588/4501588/user/htdocs/archive/20250331_082731_39878_orderupdate.json'
+// then Order Number variable shall become null.
                 if (isset($refund['transactions']) && is_array($refund['transactions'])) {
                     foreach ($refund['transactions'] as $transaction) {
                         $orderNumber = str_replace('#', '', $transaction['payment_id'] ?? '');
@@ -347,7 +349,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'orderupdate' )
 
                         //$OrderLineitemNode is sales line item
                         foreach ($OrderLineitemNode as $OrderLineitemEach) {
-                            if ($OrderLineitemEach['id'] === $RefundProductID) {
+                            if (($OrderLineitemEach['id'] === $RefundProductID) && ($orderNumber !== null)) {
                                 $Product_id = $OrderLineitemEach['product_id']; //Here you need to find product ID from an product array with the help of line_item_id
                                 $sku = $OrderLineitemEach['sku'];
                                 $name = $OrderLineitemEach['title'];
@@ -543,7 +545,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'orderupdate' )
                 $GrossAmount = $OrderAmount + $shippingCharge + $shipping_tax;
                 $shippingCharge = abs($shippingCharge);
                 $shipping_tax = abs($shipping_tax);
-                if ($hasRefundLineItems == true)
+                if ($hasRefundLineItems == true  && ($orderNumber !== null))
                     {
                      $TransactionType = 2;  
                      if($switchorderupdate == 0)
@@ -594,8 +596,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'orderupdate' )
 
                             // Read existing data
                             $existingData = [];
-                            if (file_exists('1orderheaderR.json')) {
-                                $jsonContent = file_get_contents('1orderheaderR.json');
+                            if (file_exists('2orderheaderR.json')) {
+                                $jsonContent = file_get_contents('2orderheaderR.json');
                                 if (!empty($jsonContent)) {
                                     $existingData = json_decode($jsonContent, true);
                                 }
@@ -606,7 +608,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'orderupdate' )
 
                             // Write back to file
                             $jsonData = json_encode($existingData, JSON_PRETTY_PRINT);
-                            file_put_contents('1orderheaderR.json', $jsonData);
+                            file_put_contents('2orderheaderR.json', $jsonData);
                         }   
                 }
             }

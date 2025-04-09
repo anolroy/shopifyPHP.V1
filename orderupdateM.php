@@ -10,14 +10,14 @@ if (isset($_GET['action'])) {
     $file = $_GET['file'] ?? null;
 
     // Define the file path (ensure it's a safe directory)
-    if ($isLocalServer) {
-        $filePath = 'C:\\Development\\Shopify App\\archive\\' .  $file;
-    } else {
-        echo "public server"."<br>";
-        //$filePath = '/home/pearlcol/public_html/archive/' .  $file;
-        $filePath = '/home/storage/588/4501588/user/htdocs/archive/' .  $file;        
-        echo $filePath ."<br>";
-    }  
+    // if ($isLocalServer) {
+    //     $filePath = 'C:\\Development\\Shopify App\\archive\\' .  $file;
+    // } else {
+    //     echo "public server"."<br>";
+    //     //$filePath = '/home/pearlcol/public_html/archive/' .  $file;
+    //     $filePath = '/home/storage/588/4501588/user/htdocs/archive/' .  $file;        
+    //     echo $filePath ."<br>";
+    // }  
    
     // Check if the file exists and is readable
     if ($file && file_exists($filePath)) {
@@ -697,7 +697,7 @@ if (isset($_GET['action'])) {
 
                     //$OrderLineitemNode is sales line item
                     foreach ($OrderLineitemNode as $OrderLineitemEach) {
-                        if ($OrderLineitemEach['id'] === $RefundProductID) {
+                        if (($OrderLineitemEach['id'] === $RefundProductID)&& ($orderNumber !== null))  {
                             $Product_id = $OrderLineitemEach['product_id']; //Here you need to find product ID from an product array with the help of line_item_id
                             $sku = $OrderLineitemEach['sku'];
                             $name = $OrderLineitemEach['title'];
@@ -895,7 +895,8 @@ if (isset($_GET['action'])) {
             $GrossAmount = $OrderAmount + $shippingCharge + $shipping_tax;
             $shippingCharge = abs($shippingCharge);
             $shipping_tax = abs($shipping_tax);
-            if ($hasRefundLineItems == true) {
+            if ($hasRefundLineItems == true && ($orderNumber !== null))
+            {
                 $TransactionType = 2;
                 if ($switchorderupdateM == 0) {
                     //end setting refund adjustment transactions // setting  shipping adjustment transactions  20250109  
