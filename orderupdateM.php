@@ -426,7 +426,7 @@ if (isset($_GET['action'])) {
                     $transactionTypeDesc="Sales Order";   
                     $orderGrossTotal= $orderamount+ $shippingCharge+ $shipping_tax;  
                     
-                    echo "after this line INSERT INTO orderheaders " ."<br>";
+                    // orderheaders/writing sales return " ."<br>";
                     if ($switchorderupdateM == 0) {
                         $sql = "INSERT INTO orderheaders (
                             OrderHeaderId, OrderNumber, OrderDate, DeliveryDateEarliest,TransactionType,transactionTypeDesc,InvoiceName, company,DeliveryName,InvoiceAddress1, EmailAddress, CurrencyCode, OrderGrossTotal, Comments,
@@ -659,7 +659,9 @@ if (isset($_GET['action'])) {
     //after this line we are going to update order header and order details
     $module = 'Order Update'; // Module name       
     $hasRefundLineItems = false;
-    echo "after this line INSERT INTO refunds " ."<br>";
+
+
+    echo "New Module starting!! After this line INSERT INTO refunds/Sales Return " ."<br>";
     if (isset($order_data['refunds'])) {
         foreach ($order_data['refunds'] as $refund) {
             // $orderNumber=  str_replace('#', '',$refund['name']);

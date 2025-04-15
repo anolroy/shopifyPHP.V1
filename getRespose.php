@@ -1,5 +1,5 @@
 <?php
-
+include_once 'credentials.php';
 // Define the directory for archiving files
 $archiveDir = __DIR__ . '/archive';
 
@@ -18,7 +18,7 @@ if (isset($_GET['action'])) {
     // Sanitize the 'action' parameter
     $action = sanitize_action($_GET['action']);
     
-    if (!isLocalServer) {
+    if (!$isLocalServer) {
         $hmac_header = isset($_SERVER['HTTP_X_SHOPIFY_HMAC_SHA256']) ? $_SERVER['HTTP_X_SHOPIFY_HMAC_SHA256'] : null;
 
         /**

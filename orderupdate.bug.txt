@@ -1,0 +1,2 @@
+08/04/2025
+1)	We found a malfunctioning sales return transaction (transaction type 2) in the OrderHeader table in the live hosting MySQL database. The OrderNumber (OrderHeader table) field of this transaction is empty. The OrderHeaderId(OrderHeader table) for this transaction is 1096713306494. In the OrderDetails table, that return has a line a one item. But in the line level table it creates 8 lines. the first row for this transaction also has an empty OrderNumber(OrderDetails table), while another row contains the order number "39878-R1".

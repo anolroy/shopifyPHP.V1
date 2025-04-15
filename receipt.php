@@ -91,6 +91,61 @@
         } else {
             echo "Error: " . $stmt->error;
         }
+
+        //New code for updating order id in receipt table
+               //Query to select records from Receipt where order_id is empty
+            //    $selectSql = "SELECT * FROM Receipt WHERE order_id = ''";
+            //    $result = $conn->query($selectSql);
+
+            //    if ($result->num_rows > 0) {
+            //        while ($row = $result->fetch_assoc()) {
+            //            $document_id = $row['id'];
+
+            //            // Build the API URL using document_id
+            //            $orderApiUrl = $apiUrl . $document_id . ".json";
+
+            //            // Make the API call to fetch the order details
+            //            $ch = curl_init();
+            //            curl_setopt($ch, CURLOPT_URL, $orderApiUrl);
+            //            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            //            curl_setopt($ch, CURLOPT_USERPWD, "$shopifyApiKey:$shopifyApiPassword");
+            //            $response = curl_exec($ch);
+
+            //            if ($response === false) {
+            //                echo 'Error fetching order for document_id ' . $document_id . ': ' . curl_error($ch) . "<br>";
+            //                continue;
+            //            }
+
+            //            curl_close($ch);
+
+            //            // Decode the API response
+            //            $orderDetails = json_decode($response, true);
+
+            //            if (isset($orderDetails['order']['order_number'])) {
+            //                $orderNumber = $orderDetails['order']['order_number'];
+
+            //                // Update the order_id field in Receipt with $orderNumber
+            //                $updateSql = "UPDATE Receipt SET order_id = ? WHERE id = ?";
+            //                $stmt = $conn->prepare($updateSql);
+            //                $stmt->bind_param("si", $orderNumber, $document_id);
+
+            //                if ($stmt->execute()) {
+            //                    echo "Updated order_id for document_id $document_id with orderNumber $orderNumber.<br>";
+            //                } else {
+            //                    echo "Error updating order_id for document_id $document_id: " . $stmt->error . "<br>";
+            //                }
+
+            //                $stmt->close();
+            //            } else {
+            //                echo "No order_number found for document_id $document_id.<br>";
+            //            }
+            //        }
+            //    } else {
+            //        echo "No records found with empty order_id.<br>";
+            //    }
+               
+
+
         $checkSql = "SELECT order_id FROM Receipt WHERE id = ?";
         $stmt = $conn->prepare($checkSql);
         $stmt->bind_param('i', $document_id);
@@ -138,19 +193,11 @@
                 } else {
                     echo "Error: " . $conn->error;
                 }                   
-                //$stmt->close();
-                // Update query
-                // $sql = "UPDATE Receipt R, orderheaders O 
-                // SET R.order_id = O.OrderNumber 
-                // WHERE O.OrderHeaderId = R.id and LENGTH(R.payment_id)>20;";
-
-                // if ($conn->query($sql) === TRUE) {
-                //     echo "Records updated successfully.";
-                // } else {
-                //     echo "Error updating records: " . $conn->error;
-                // }
+               
                 $conn->close();
             }
-        }    
+        }  
+        
+        
     //***************************************************** */   receipt end***************************************
     ?>

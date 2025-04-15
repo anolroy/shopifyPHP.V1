@@ -30,16 +30,8 @@ function listJsonFiles($directory)
     $files = glob($directory . '/*.json');
     return $files;
 }
-if ($isLocalServer) {
-    $directory = 'C:\Development\Shopify App\archive';     
-} else {
-    $directory = '/home/storage/588/4501588/user/htdocs/archive/';//this is pearl collection server
-        //$directory = '/home/storage/651/4265651/user/htdocs/archive'; //this is pcmdesign collection server   
-        ///home/storage/588/4501588/user/htdocs/archive
-   // $directory = '/archive';    
-}
-//$directory = '/home/pearlcol/public_html/archive';
-//$directory = 'E:\Shopify PHP API';
+
+
 $jsonFiles = listJsonFiles($directory);
 
 ?>
